@@ -5,6 +5,7 @@ import createRecord from "../services/records/createRecord.js";
 import updateRecordById from "../services/records/updateRecordById.js";
 import deleteRecord from "../services/records/deleteRecord.js";
 import authMiddleware from "../middelware/advancedAuth.js";
+import notFoundErrorHandler from "../middelware/notFoundErrorHandler.js";
 
 const router = express.Router();
 
@@ -19,8 +20,9 @@ router.get("/", (req, res) => {
   }
 });
 
-router.get("/:id", (req, res) => {
-  try {
+router.get(
+  "/:id",
+  (req, res) => {
     const { id } = req.params;
     const record = getRecordById(id);
     if (!record) {
@@ -28,11 +30,9 @@ router.get("/:id", (req, res) => {
     } else {
       res.status(200).json(record);
     }
-  } catch (error) {
-    console.log(error);
-    res.status(500).send("Something went wrong while getting record by id!");
-  }
-});
+  },
+  notFoundErrorHandler
+);
 
 router.post("/", authMiddleware, (req, res) => {
   try {
@@ -45,8 +45,10 @@ router.post("/", authMiddleware, (req, res) => {
   }
 });
 
-router.put("/:id", authMiddleware, (req, res) => {
-  try {
+router.put(
+  "/:id",
+  authMiddleware,
+  (req, res) => {
     const { id } = req.params;
     const { title, artist, year, available, genre } = req.body;
     const newRecord = updateRecordById(
@@ -58,14 +60,14 @@ router.put("/:id", authMiddleware, (req, res) => {
       genre
     );
     res.status(200).json(newRecord);
-  } catch (error) {
-    console.log(error);
-    res.status(500).send("Something went wrong updating the record");
-  }
-});
+  },
+  notFoundErrorHandler
+);
 
-router.delete("/:id", authMiddleware, (req, res) => {
-  try {
+router.delete(
+  "/:id",
+  authMiddleware,
+  (req, res) => {
     const { id } = req.params;
     const deletedRecordId = deleteRecord(id);
     if (!deletedRecordId) {
@@ -75,10 +77,8 @@ router.delete("/:id", authMiddleware, (req, res) => {
         message: `Record with id ${deletedRecordId} was deleted!`,
       });
     }
-  } catch (error) {
-    console.log(error);
-    res.status(500).send("Something went wrong deleting the record");
-  }
-});
+  },
+  notFoundErrorHandler
+);
 
 export default router;

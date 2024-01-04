@@ -5,6 +5,7 @@ import getBookById from "../services/books/getBookById.js";
 import updateBookById from "../services/books/updateBookById.js";
 import deleteBook from "../services/books/deleteBook.js";
 import authMiddleware from "../middelware/advancedAuth.js";
+import notFoundErrorHandler from "../middelware/notFoundErrorHandler.js";
 
 const router = express.Router();
 
@@ -30,24 +31,20 @@ router.post("/", authMiddleware, (req, res) => {
   }
 });
 
-router.get("/:id", (req, res) => {
-  try {
+router.get(
+  "/:id",
+  (req, res) => {
     const { id } = req.params;
     const book = getBookById(id);
+    res.status(200).json(book);
+  },
+  notFoundErrorHandler
+);
 
-    if (!book) {
-      res.status(404).send(`Book with id ${id} was not found!`);
-    } else {
-      res.status(200).json(book);
-    }
-  } catch (error) {
-    console.error(error);
-    res.status(500).send("Something went wrong while getting book by id!");
-  }
-});
-
-router.put("/:id", authMiddleware, (req, res) => {
-  try {
+router.put(
+  "/:id",
+  authMiddleware,
+  (req, res) => {
     const { title, author, isbn, pages, available, genre } = req.body;
     const updatedBook = updateBookById(
       id,
@@ -59,28 +56,22 @@ router.put("/:id", authMiddleware, (req, res) => {
       genre
     );
     res.status(200).json(updatedBook);
-  } catch (error) {
-    console.error(error);
-    res.status(500).send("Something went wrong while updating book by id!");
-  }
-});
+  },
+  notFoundErrorHandler
+);
 
-router.delete("/:id", authMiddleware, (req, res) => {
-  try {
+router.delete(
+  "/:id",
+  authMiddleware,
+  (req, res) => {
     const { id } = req.params;
     const deletedBookId = deleteBook(id);
 
-    if (!deletedBookId) {
-      res.status(404).send(`Book with id ${id} was not found!`);
-    } else {
-      res.status(200).json({
-        message: `Book with id ${deletedBookId} was deleted!`,
-      });
-    }
-  } catch (error) {
-    console.error(error);
-    res.status(500).send("Something went wrong while deleting book by id!");
-  }
-});
+    res.status(200).json({
+      message: `Book with id ${deletedBookId} was deleted!`,
+    });
+  },
+  notFoundErrorHandler
+);
 
 export default router;
